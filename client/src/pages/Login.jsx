@@ -1,8 +1,6 @@
-
 import { useState } from "react";
 
 function Login() {
-
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -11,7 +9,6 @@ function Login() {
   const [message, setMessage] = useState("");
 
   function handleChange(event) {
-
     const { name, value } = event.target;
 
     setFormData({
@@ -21,7 +18,6 @@ function Login() {
   }
 
   function handleSubmit(event) {
-
     event.preventDefault();
 
     if (!formData.email || !formData.password) {
@@ -33,9 +29,8 @@ function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 px-6 py-16">
-
-      <div className="mx-auto max-w-md rounded-xl bg-white p-8 shadow-md">
+    <div className="min-h-screen bg-slate-50 px-6 py-16">
+      <div className="mx-auto max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
 
         <h1 className="text-3xl font-bold text-slate-900">
           Login
@@ -49,11 +44,10 @@ function Login() {
           onSubmit={handleSubmit}
           className="mt-6 space-y-4"
         >
-
           <div>
-            <label className="mb-1 block font-medium">
+            <label className="mb-1 block font-medium text-slate-800">
               Email
-   </label>
+            </label>
 
             <input
               type="email"
@@ -61,14 +55,15 @@ function Login() {
               value={formData.email}
               onChange={handleChange}
               placeholder="Enter your email"
-              className="w-full rounded-lg border px-4 py-2
-                         outline-none focus:ring-2
-                         focus:ring-indigo-500"
+              className="w-full rounded-lg border border-slate-300 px-4 py-3
+                         outline-none transition
+                         focus:border-blue-500 focus:ring-2
+                         focus:ring-blue-100"
             />
           </div>
 
           <div>
-            <label className="mb-1 block font-medium">
+            <label className="mb-1 block font-medium text-slate-800">
               Password
             </label>
 
@@ -78,30 +73,29 @@ function Login() {
               value={formData.password}
               onChange={handleChange}
               placeholder="Enter your password"
-              className="w-full rounded-lg border px-4 py-2
-                         outline-none focus:ring-2
-                         focus:ring-indigo-500"
+              className="w-full rounded-lg border border-slate-300 px-4 py-3
+                         outline-none transition
+                         focus:border-blue-500 focus:ring-2
+                         focus:ring-blue-100"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-indigo-600
-                       px-4 py-3 font-semibold text-white
-                       transition hover:bg-indigo-700"
+            className="w-full rounded-lg bg-blue-600 px-4 py-3
+                       font-semibold text-white transition
+                       hover:bg-blue-700"
           >
             Login
           </button>
 
           {message && (
-            <p className="text-center font-semibold text-indigo-600">
+            <p className="text-center font-semibold text-blue-600">
               {message}
             </p>
           )}
-
         </form>
-  </div>
-
+      </div>
     </div>
   );
 }

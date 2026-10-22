@@ -1,11 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 function Navbar() {
   return (
-    <nav className="bg-slate-900 text-white shadow-md">
+    <nav className="sticky top-0 z-50 border-b border-slate-800 bg-slate-900 text-white shadow-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
 
-        {/* Logo */}
+        {/* EventHub Logo */}
         <Link
           to="/"
           className="text-2xl font-bold tracking-tight text-white transition hover:text-blue-400"
@@ -13,36 +13,61 @@ function Navbar() {
           EventHub
         </Link>
 
-        {/* Navigation */}
-        <div className="flex items-center gap-6">
+        {/* Navigation Links */}
+        <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
 
-          <Link
+          <NavLink
             to="/"
-            className="font-medium text-slate-200 transition hover:text-blue-400"
+            end
+            className={({ isActive }) =>
+              `rounded-lg px-3 py-2 text-sm font-medium transition sm:text-base ${
+                isActive
+                  ? "bg-slate-800 text-blue-400"
+                  : "text-slate-200 hover:bg-slate-800 hover:text-blue-400"
+              }`
+            }
           >
             Home
-          </Link>
+          </NavLink>
 
-          <Link
+          <NavLink
             to="/events"
-            className="font-medium text-slate-200 transition hover:text-blue-400"
+            className={({ isActive }) =>
+              `rounded-lg px-3 py-2 text-sm font-medium transition sm:text-base ${
+                isActive
+                  ? "bg-slate-800 text-blue-400"
+                  : "text-slate-200 hover:bg-slate-800 hover:text-blue-400"
+              }`
+            }
           >
             Events
-          </Link>
+          </NavLink>
 
-          <Link
+          <NavLink
             to="/login"
-            className="font-medium text-slate-200 transition hover:text-blue-400"
+            className={({ isActive }) =>
+              `rounded-lg px-3 py-2 text-sm font-medium transition sm:text-base ${
+                isActive
+                  ? "bg-slate-800 text-blue-400"
+                  : "text-slate-200 hover:bg-slate-800 hover:text-blue-400"
+              }`
+            }
           >
             Login
-          </Link>
+          </NavLink>
 
-          <Link
+          <NavLink
             to="/register"
-            className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700"
+            className={({ isActive }) =>
+              `rounded-lg px-4 py-2 text-sm font-semibold text-white transition sm:text-base ${
+                isActive
+                  ? "bg-blue-700"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`
+            }
           >
             Register
-          </Link>
+          </NavLink>
 
         </div>
       </div>

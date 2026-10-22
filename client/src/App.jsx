@@ -16,18 +16,13 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Home />} />
-
         <Route path="/events" element={<Events />} />
-
         <Route path="/login" element={<Login />} />
-
         <Route path="/register" element={<Register />} />
-
         <Route
           path="/my-registrations"
           element={<MyRegistrations />}
         />
-
         <Route
           path="/admin"
           element={<AdminDashboard />}
