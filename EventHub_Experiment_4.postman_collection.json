@@ -1,0 +1,203 @@
+{
+  "info": {
+    "name": "EventHub - FSD Experiment 4 CRUD",
+    "description": "Run requests in order: GET all, GET by ID, POST, PUT, DELETE, then invalid GET. Start Express on port 5000 first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 - GET all events",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/events"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"GET all returns 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Response is an array\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - GET event ID 1",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/events/1"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"GET by ID returns 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Requested ID is 1\", () => pm.expect(pm.response.json().id).to.eql(1));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - POST create event",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/events",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Web Development Bootcamp\",\n  \"description\": \"Hands-on full-stack development workshop.\",\n  \"date\": \"15 November 2026\",\n  \"location\": \"Mumbai\",\n  \"category\": \"Workshop\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"POST returns 201\", () => pm.response.to.have.status(201));",
+              "const created = pm.response.json();",
+              "pm.collectionVariables.set(\"eventId\", String(created.id));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - PUT update created event",
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/api/events/{{eventId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Web Development Bootcamp - Updated\",\n  \"description\": \"Updated hands-on full-stack development workshop.\",\n  \"date\": \"16 November 2026\",\n  \"location\": \"Pune\",\n  \"category\": \"Workshop\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"PUT returns 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Title updated\", () => pm.expect(pm.response.json().title).to.contain(\"Updated\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - DELETE created event",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/events/{{eventId}}"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"DELETE returns 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Deletion message returned\", () => pm.expect(pm.response.json().message).to.eql(\"Event deleted successfully\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - GET invalid event ID 9999",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/events/9999"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Missing event returns 404\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - POST missing required fields (400)",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/events",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Incomplete\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Missing required fields returns 400\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "eventId",
+      "value": "4"
+    }
+  ]
+}

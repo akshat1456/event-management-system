@@ -1,0 +1,7 @@
+# Use this workspace to collaborate
+workspace:
+  id: de7a220c-343c-40d7-8bf3-362acb1dff8d
+
+localResources:
+  collections:
+    - ../EventHub_Experiment_4.postman_collection.json
