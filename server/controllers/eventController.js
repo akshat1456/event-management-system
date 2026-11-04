@@ -8,7 +8,6 @@ function validateEvent(body) {
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     return { error: "Request body must be a JSON object" };
   }
-
   const cleaned = {};
   for (const field of fields) {
     if (typeof body[field] !== "string" || !body[field].trim()) {
@@ -26,69 +25,50 @@ function validId(id) {
   return /^[0-9a-fA-F]{24}$/.test(id) && mongoose.isValidObjectId(id);
 }
 
-async function getAllEvents(req, res) {
-  const events = await Event.find().sort({ _id: -1 });
-  return res.status(200).json(events);
+// Broadcast only public event information, never authentication credentials.
+function notifyConnectedClients(req, action, event) {
+  const io = req.app.get("io");
+  if (!io) return;
+  io.emit("event:notification", {
+    action,
+    eventId: event._id.toString(),
+    title: event.title,
+    message: `Event ${action}: ${event.title}`,
+    timestamp: new Date().toISOString(),
+  });
 }
 
+async function getAllEvents(_req, res) {
+  return res.status(200).json(await Event.find().sort({ _id: -1 }));
+}
 async function getEventById(req, res) {
-  if (!validId(req.params.id)) {
-    return res.status(400).json({ message: "Invalid MongoDB event ID" });
-  }
-
+  if (!validId(req.params.id)) return res.status(400).json({ message: "Invalid MongoDB event ID" });
   const event = await Event.findById(req.params.id);
-  if (!event) {
-    return res.status(404).json({ message: "Event not found" });
-  }
+  if (!event) return res.status(404).json({ message: "Event not found" });
   return res.status(200).json(event);
 }
-
 async function createEvent(req, res) {
   const { data, error } = validateEvent(req.body);
-  if (error) {
-    return res.status(400).json({ message: error });
-  }
-
+  if (error) return res.status(400).json({ message: error });
   const event = await Event.create(data);
+  notifyConnectedClients(req, "created", event);
   return res.status(201).json(event);
 }
-
 async function updateEvent(req, res) {
-  if (!validId(req.params.id)) {
-    return res.status(400).json({ message: "Invalid MongoDB event ID" });
-  }
-
+  if (!validId(req.params.id)) return res.status(400).json({ message: "Invalid MongoDB event ID" });
   const { data, error } = validateEvent(req.body);
-  if (error) {
-    return res.status(400).json({ message: error });
-  }
-
-  const event = await Event.findByIdAndUpdate(req.params.id, data, {
-    new: true,
-    runValidators: true,
-  });
-  if (!event) {
-    return res.status(404).json({ message: "Event not found" });
-  }
+  if (error) return res.status(400).json({ message: error });
+  const event = await Event.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
+  if (!event) return res.status(404).json({ message: "Event not found" });
+  notifyConnectedClients(req, "updated", event);
   return res.status(200).json(event);
 }
-
 async function deleteEvent(req, res) {
-  if (!validId(req.params.id)) {
-    return res.status(400).json({ message: "Invalid MongoDB event ID" });
-  }
-
+  if (!validId(req.params.id)) return res.status(400).json({ message: "Invalid MongoDB event ID" });
   const event = await Event.findByIdAndDelete(req.params.id);
-  if (!event) {
-    return res.status(404).json({ message: "Event not found" });
-  }
+  if (!event) return res.status(404).json({ message: "Event not found" });
+  notifyConnectedClients(req, "deleted", event);
   return res.status(200).json({ message: "Event deleted successfully", event });
 }
 
-module.exports = {
-  getAllEvents,
-  getEventById,
-  createEvent,
-  updateEvent,
-  deleteEvent,
-};
+module.exports = { getAllEvents, getEventById, createEvent, updateEvent, deleteEvent };

@@ -1,5 +1,6 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
+import NotificationBell from "./NotificationBell";
 
 const navClass = ({ isActive }) => `rounded-lg px-3 py-2 text-sm font-semibold transition ${isActive ? "bg-slate-700 text-white" : "text-slate-200 hover:bg-slate-700"}`;
 function Navbar() {
@@ -16,6 +17,7 @@ function Navbar() {
           {user ? <>
             <NavLink to="/my-registrations" className={navClass}>My Registrations</NavLink>
             {user.role === "admin" && <NavLink to="/admin" className={navClass}>Admin</NavLink>}
+            <NotificationBell />
             <span className="rounded-md bg-slate-700 px-3 py-2 text-sm">{user.name} ({user.role})</span>
             <button type="button" onClick={signOut} className="rounded-lg bg-slate-700 px-4 py-2 font-semibold hover:bg-slate-600">Logout</button>
           </> : <>

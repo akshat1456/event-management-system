@@ -1,18 +1,36 @@
 require("dotenv").config();
 
+const { createServer } = require("node:http");
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const { Server } = require("socket.io");
 const connectDB = require("./config/db");
 const eventRoutes = require("./routes/eventRoutes");
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
-app.use(cors()); // Local practical only. Configure restricted origins for production.
-app.use(express.json({ limit: "10kb" }));
 
+// Vite local-dev origins. Set explicit production origins before deploying.
+const localClientOrigin = /^http:\/\/(localhost|127\.0\.0\.1):517\d$/;
+const io = new Server(httpServer, {
+  cors: { origin: localClientOrigin, methods: ["GET", "POST"] },
+});
+
+// Event controllers get the Socket.IO server using req.app.get("io").
+app.set("io", io);
+io.on("connection", (socket) => {
+  console.log(`Socket.IO client connected: ${socket.id}`);
+  socket.on("disconnect", (reason) => {
+    console.log(`Socket.IO client disconnected: ${socket.id} (${reason})`);
+  });
+});
+
+app.use(cors()); // Local practical only: restrict HTTP CORS origins in production.
+app.use(express.json({ limit: "10kb" }));
 app.get("/", (_req, res) => res.status(200).json({ message: "EventHub API is running" }));
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
@@ -41,7 +59,7 @@ async function startServer() {
   }
   try {
     await connectDB();
-    app.listen(PORT, () => console.log(`EventHub API running at http://localhost:${PORT}`));
+    httpServer.listen(PORT, () => console.log(`EventHub API + Socket.IO running at http://localhost:${PORT}`));
   } catch (_error) {
     console.error("MongoDB connection failed. Check server/.env and Atlas Network Access.");
     process.exitCode = 1;
