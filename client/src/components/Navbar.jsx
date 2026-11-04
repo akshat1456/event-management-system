@@ -1,78 +1,30 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
 
+const navClass = ({ isActive }) => `rounded-lg px-3 py-2 text-sm font-semibold transition ${isActive ? "bg-slate-700 text-white" : "text-slate-200 hover:bg-slate-700"}`;
 function Navbar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  function signOut() { logout(); navigate("/login"); }
   return (
     <nav className="sticky top-0 z-50 border-b border-slate-800 bg-slate-900 text-white shadow-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-
-        {/* EventHub Logo */}
-        <Link
-          to="/"
-          className="text-2xl font-bold tracking-tight text-white transition hover:text-blue-400"
-        >
-          EventHub
-        </Link>
-
-        {/* Navigation Links */}
-        <div className="flex items-center gap-2 sm:gap-4 md:gap-6">
-
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              `rounded-lg px-3 py-2 text-sm font-medium transition sm:text-base ${
-                isActive
-                  ? "bg-slate-800 text-blue-400"
-                  : "text-slate-200 hover:bg-slate-800 hover:text-blue-400"
-              }`
-            }
-          >
-            Home
-          </NavLink>
-
-          <NavLink
-            to="/events"
-            className={({ isActive }) =>
-              `rounded-lg px-3 py-2 text-sm font-medium transition sm:text-base ${
-                isActive
-                  ? "bg-slate-800 text-blue-400"
-                  : "text-slate-200 hover:bg-slate-800 hover:text-blue-400"
-              }`
-            }
-          >
-            Events
-          </NavLink>
-
-          <NavLink
-            to="/login"
-            className={({ isActive }) =>
-              `rounded-lg px-3 py-2 text-sm font-medium transition sm:text-base ${
-                isActive
-                  ? "bg-slate-800 text-blue-400"
-                  : "text-slate-200 hover:bg-slate-800 hover:text-blue-400"
-              }`
-            }
-          >
-            Login
-          </NavLink>
-
-          <NavLink
-            to="/register"
-            className={({ isActive }) =>
-              `rounded-lg px-4 py-2 text-sm font-semibold text-white transition sm:text-base ${
-                isActive
-                  ? "bg-blue-700"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`
-            }
-          >
-            Register
-          </NavLink>
-
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-4">
+        <Link to="/" className="text-2xl font-bold">EventHub</Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <NavLink to="/" end className={navClass}>Home</NavLink>
+          <NavLink to="/events" className={navClass}>Events</NavLink>
+          {user ? <>
+            <NavLink to="/my-registrations" className={navClass}>My Registrations</NavLink>
+            {user.role === "admin" && <NavLink to="/admin" className={navClass}>Admin</NavLink>}
+            <span className="rounded-md bg-slate-700 px-3 py-2 text-sm">{user.name} ({user.role})</span>
+            <button type="button" onClick={signOut} className="rounded-lg bg-slate-700 px-4 py-2 font-semibold hover:bg-slate-600">Logout</button>
+          </> : <>
+            <NavLink to="/login" className={navClass}>Login</NavLink>
+            <NavLink to="/register" className={navClass}>Register</NavLink>
+          </>}
         </div>
       </div>
     </nav>
   );
 }
-
 export default Navbar;

@@ -1,103 +1,33 @@
 import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
 
 function Login() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
-  const [message, setMessage] = useState("");
-
-  function handleChange(event) {
-    const { name, value } = event.target;
-
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function submit(event) {
+    event.preventDefault(); setError(""); setBusy(true);
+    try {
+      const user = await login(form);
+      navigate(location.state?.from || (user.role === "admin" ? "/admin" : "/events"), { replace: true });
+    } catch (err) { setError(err.message); } finally { setBusy(false); }
   }
-
-  function handleSubmit(event) {
-    event.preventDefault();
-
-    if (!formData.email || !formData.password) {
-      setMessage("Please fill in all fields.");
-      return;
-    }
-
-    setMessage("Login successful!");
-  }
-
   return (
-    <div className="min-h-screen bg-slate-50 px-6 py-16">
-      <div className="mx-auto max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-
-        <h1 className="text-3xl font-bold text-slate-900">
-          Login
-        </h1>
-
-        <p className="mt-2 text-slate-600">
-          Login to manage your event registrations.
-        </p>
-
-        <form
-          onSubmit={handleSubmit}
-          className="mt-6 space-y-4"
-        >
-          <div>
-            <label className="mb-1 block font-medium text-slate-800">
-              Email
-            </label>
-
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              className="w-full rounded-lg border border-slate-300 px-4 py-3
-                         outline-none transition
-                         focus:border-blue-500 focus:ring-2
-                         focus:ring-blue-100"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block font-medium text-slate-800">
-              Password
-            </label>
-
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              className="w-full rounded-lg border border-slate-300 px-4 py-3
-                         outline-none transition
-                         focus:border-blue-500 focus:ring-2
-                         focus:ring-blue-100"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-blue-600 px-4 py-3
-                       font-semibold text-white transition
-                       hover:bg-blue-700"
-          >
-            Login
-          </button>
-
-          {message && (
-            <p className="text-center font-semibold text-blue-600">
-              {message}
-            </p>
-          )}
-        </form>
-      </div>
-    </div>
+    <main className="min-h-screen bg-slate-50 px-6 py-16">
+      <form onSubmit={submit} className="mx-auto max-w-md space-y-4 rounded-xl border bg-white p-8 shadow-sm">
+        <h1 className="text-3xl font-bold">Login</h1>
+        {location.state?.message && <p className="text-green-700">{location.state.message}</p>}
+        <label className="block font-medium">Email<input required type="email" autoComplete="username" className="mt-1 w-full rounded border p-3" value={form.email} onChange={e => setForm(f => ({...f,email:e.target.value}))}/></label>
+        <label className="block font-medium">Password<input required type="password" autoComplete="current-password" className="mt-1 w-full rounded border p-3" value={form.password} onChange={e => setForm(f => ({...f,password:e.target.value}))}/></label>
+        {error && <p role="alert" className="text-red-700">{error}</p>}
+        <button disabled={busy} className="w-full rounded bg-blue-600 px-4 py-3 font-bold text-white disabled:opacity-60">{busy ? "Logging in..." : "Login"}</button>
+        <p className="text-center text-sm">New user? <Link className="text-blue-700 underline" to="/register">Register</Link></p>
+      </form>
+    </main>
   );
 }
-
 export default Login;
