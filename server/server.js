@@ -1,39 +1,60 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
+const mongoose = require("mongoose");
+const connectDB = require("./config/db");
 const eventRoutes = require("./routes/eventRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware: JSON body parsing and cross-origin requests for local development.
-app.use(cors());
+app.use(cors()); // Development only; limit allowed origins before production.
 app.use(express.json({ limit: "10kb" }));
 
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   res.status(200).json({ message: "EventHub API is running" });
 });
 
-app.use("/api/events", eventRoutes);
+app.use("/api/events", (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({ message: "Database temporarily unavailable" });
+  }
+  next();
+}, eventRoutes);
 
-// Any route not handled above returns a JSON 404.
-app.use((req, res) => {
+app.use((_req, res) => {
   res.status(404).json({ message: "API endpoint not found" });
 });
 
-// Error-handling middleware (four parameters are required by Express).
-app.use((err, req, res, next) => {
+app.use((err, _req, res, _next) => {
   if (err.type === "entity.parse.failed") {
     return res.status(400).json({ message: "Invalid JSON request body" });
   }
-
   if (err.type === "entity.too.large") {
     return res.status(413).json({ message: "Request body is too large" });
   }
+  if (err instanceof mongoose.Error.ValidationError) {
+    return res.status(400).json({ message: "Event data failed validation" });
+  }
+  if (err instanceof mongoose.Error.CastError) {
+    return res.status(400).json({ message: "Invalid event data" });
+  }
 
-  console.error(err);
+  console.error("API request failed:", err.message);
   return res.status(500).json({ message: "Internal server error" });
 });
 
-app.listen(PORT, () => {
-  console.log(`EventHub API running at http://localhost:${PORT}`);
-});
+async function startServer() {
+  try {
+    await connectDB(); // Do not accept API requests until MongoDB connects.
+    app.listen(PORT, () => {
+      console.log(`EventHub API running at http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error("Could not connect to MongoDB Atlas. Check server/.env, database user, and network access.");
+    process.exitCode = 1;
+  }
+}
+
+startServer();
